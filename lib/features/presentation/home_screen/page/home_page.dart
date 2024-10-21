@@ -4,8 +4,10 @@
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:reno_email/core/extensions.dart';
 
 import '../../../../config/constants.dart';
+import '../../../domain/email_entity.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({
@@ -19,7 +21,7 @@ class HomePage extends HookConsumerWidget {
     final systemMessage = OpenAIChatCompletionChoiceMessageModel(
       content: [
         OpenAIChatCompletionChoiceMessageContentItemModel.text(
-          "You are an assistant that helps write professional emails.",
+          "You are an assistant that helps write professional emails. Should have subject in response",
         ),
 
       ],
@@ -30,7 +32,7 @@ class HomePage extends HookConsumerWidget {
     final userMessage = OpenAIChatCompletionChoiceMessageModel(
       content: [
         OpenAIChatCompletionChoiceMessageContentItemModel.text(
-          "Write a friendly email inviting someone to dinner",
+          "Write a friendly email inviting someone to party",
         ),
 
       ],
@@ -54,11 +56,23 @@ class HomePage extends HookConsumerWidget {
         temperature: 0.7,  // Slightly higher creativity might make the email feel more natural
       );
 
+      String contentText = chatCompletion.choices.first.message.content!.first.text!;
+      String subject = contentText.extractSubject();
+      bool isSubject = subject.isNotEmpty;
+
+      EmailEntity email = EmailEntity(
+        role: chatCompletion.choices.first.message.role.name,
+        type: chatCompletion.choices.first.message.content!.first.type,
+        subject: isSubject ? subject : '',
+        text: isSubject
+            ? contentText.extractTextAfterSubject()
+            : contentText,
+      );
 
 
-      print(chatCompletion.choices.first.message); // ...
-      print(chatCompletion.systemFingerprint); // ...
-      print(chatCompletion.id); // ...
+      print(email.toString());
+      print(chatCompletion.choices.first.message);
+
     }
 
     return Scaffold(
