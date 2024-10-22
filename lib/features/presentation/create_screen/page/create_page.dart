@@ -1,15 +1,14 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:reno_email/core/enums.dart';
-import 'package:reno_email/core/extensions.dart';
 import 'package:reno_email/providers/providers.dart';
 import '../../../../utils/functions.dart';
-import '../../../domain/email_entity.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 class CreatePage extends HookConsumerWidget {
   const CreatePage({
@@ -18,8 +17,9 @@ class CreatePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double rowHeight = 100;
-    QuillController controller = QuillController.basic();
+    const double rowHeight = 120;
+    final textEditController = useTextEditingController();
+    ThemeData theme = Theme.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -65,12 +65,29 @@ class CreatePage extends HookConsumerWidget {
                 },
                 child: Container(
                   width: double.infinity,
-                  height: 120,
+                  height: 100,
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.red,
+                    color: theme.colorScheme.primaryContainer,
                   ),
-                  child: Center(child: Text(languagePvd)),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: theme.colorScheme.inversePrimary,
+                        child: const Icon(
+                          Icons.translate_rounded,
+                          size: 30,
+                        ),
+                      ),
+                      Expanded(
+                          child: Center(
+                              child: Text(
+                        languagePvd,
+                        style: TextStyle(fontSize: 20),
+                      ))),
+                    ],
+                  ),
                 ),
               );
             }),
@@ -119,15 +136,49 @@ class CreatePage extends HookConsumerWidget {
                       },
                       child: Container(
                         height: rowHeight,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          color: Colors.red,
+                          color: theme.colorScheme.primaryContainer,
                         ),
-                        child: Center(child: Text(toneType)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: theme.colorScheme.inversePrimary,
+                                  child: const Icon(
+                                    Icons.settings,
+                                    size: 30,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                Expanded(
+                                    child: AutoSizeText(
+                                  toneType,
+                                  maxLines: 1,
+                                  style: const TextStyle(fontSize: 20),
+                                  minFontSize: 12,
+                                )),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            const Text(
+                              'Writing tone',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   })),
-                  SizedBox(
+                  const SizedBox(
                     width: 12,
                   ),
                   Expanded(child: Consumer(builder: (context, ref, child) {
@@ -167,11 +218,42 @@ class CreatePage extends HookConsumerWidget {
                       },
                       child: Container(
                         height: rowHeight,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          color: Colors.red,
+                          color: theme.colorScheme.primaryContainer,
                         ),
-                        child: Center(child: Text(textLength.name)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: theme.colorScheme.inversePrimary,
+                                  child: const Icon(
+                                    Icons.history_edu,
+                                    size: 30,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  textLength.name,
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              'Text length',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   })),
@@ -181,11 +263,19 @@ class CreatePage extends HookConsumerWidget {
             const SizedBox(
               height: 12,
             ),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Email instruction'),
-                Text('Clear'),
+                const Text(
+                  'Email instruction',
+                  style: TextStyle(fontSize: 20),
+                ),
+                TextButton(
+                  onPressed: () {
+                    textEditController.text = '';
+                  },
+                  child: const Text('Clear'),
+                ),
               ],
             ),
             const SizedBox(
@@ -198,24 +288,45 @@ class CreatePage extends HookConsumerWidget {
                       height: 300,
                       width: 100,
                       child: LoadingAnimationWidget.staggeredDotsWave(color: Colors.red, size: 100))
-                  : Container(
-                      height: 300,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey),
-                        color: Colors.grey.withOpacity(0.1),
-                      ),
-                      padding: EdgeInsets.all(12),
-                      child: QuillEditor.basic(
-                        controller: controller,
-                        configurations: const QuillEditorConfigurations(
-                            placeholder:
-                                "Type to provide instructions on what type of email you want the ai to write."),
+                  : SizedBox(
+                      height: 300, // <-- TextField height
+                      child: TextField(
+                        maxLines: null,
+                        expands: true,
+                        controller: textEditController,
+                        keyboardType: TextInputType.multiline,
+                        textAlignVertical: TextAlignVertical.top,
+                        decoration: InputDecoration(
+                          filled: true,
+                          hintText: 'Type to provide instructions on what type of email you want the ai to write..."',
+                          // Placeholder text
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // Border radius
+                            borderSide: BorderSide(color: theme.colorScheme.primaryContainer), // Border color
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // Focused border radius
+                            borderSide: BorderSide(color: theme.colorScheme.primary), // Focused border color
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // Enabled border radius
+                            borderSide: BorderSide(color: theme.colorScheme.primaryContainer), // Enabled border color
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10), // Adjust padding
+                        ),
                       ),
                     );
             }),
-            TextButton(
+            SizedBox(height: 8,),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: theme.colorScheme.onSurface, // Set the background color
+                backgroundColor: theme.colorScheme.primaryContainer, // Set the text (and icon) color
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
               onPressed: () async {
                 ref.read(isGeneratingProvider.notifier).update((state) => true);
                 final textLength = ref.read(textLengthProvider);
@@ -238,7 +349,7 @@ class CreatePage extends HookConsumerWidget {
                 final userMessage = OpenAIChatCompletionChoiceMessageModel(
                   content: [
                     OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                      controller.document.toPlainText(),
+                      textEditController.text,
                     ),
                   ],
                   role: OpenAIChatMessageRole.user,
@@ -254,7 +365,7 @@ class CreatePage extends HookConsumerWidget {
                   if (context.mounted) context.push('/detail', extra: email);
                 });
               },
-              child: Text('Button'),
+              child: const Text('GENERATE'),
             ),
           ],
         ),
