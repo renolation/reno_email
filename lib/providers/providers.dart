@@ -9,6 +9,6 @@ final toneTypeProvider = StateProvider<String>((ref) {
   return ToneType.Formal.name;
 });
 
-final textLengthProvider = StateProvider<String>((ref) {
-  return TextLength.Short.name;
+final textLengthProvider = StateProvider<TextLength>((ref) {
+  return TextLength.Short;
 });

@@ -48,6 +48,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
 
   modal_bottom_sheet: ^3.0.0
+  flutter_quill: ^10.8.4
 
 
 dev_dependencies:
