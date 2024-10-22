@@ -12,3 +12,5 @@ final toneTypeProvider = StateProvider<String>((ref) {
 final textLengthProvider = StateProvider<TextLength>((ref) {
   return TextLength.Short;
 });
+
+final isGeneratingProvider = StateProvider<bool>((ref) => false);
