@@ -1,5 +1,7 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:reno_email/config/router.dart';
@@ -15,59 +17,7 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    onPressed() async {
-      // the system message that will be sent to the request.
-      final systemMessage = OpenAIChatCompletionChoiceMessageModel(
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.text(
-            "You are an assistant that helps write professional emails. Should have subject in response",
-          ),
-        ],
-        role: OpenAIChatMessageRole.system,
-      );
-
-      // the user message that will be sent to the request.
-      final userMessage = OpenAIChatCompletionChoiceMessageModel(
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.text(
-            "Write a friendly email inviting someone to party",
-          ),
-        ],
-        role: OpenAIChatMessageRole.user,
-      );
-
-      // all messages to be sent.
-      final requestMessages = [
-        systemMessage,
-        userMessage,
-      ];
-
-      OpenAIChatCompletionModel chatCompletion =
-          await OpenAI.instance.chat.create(
-        model: "gpt-4o-mini",
-        seed: 6,
-        messages: requestMessages,
-        maxTokens: 250,
-        // Allow more tokens to ensure the full email is generated
-        temperature:
-            0.7, // Slightly higher creativity might make the email feel more natural
-      );
-
-      String contentText =
-          chatCompletion.choices.first.message.content!.first.text!;
-      String subject = contentText.extractSubject();
-      bool isSubject = subject.isNotEmpty;
-
-      EmailEntity email = EmailEntity(
-        role: chatCompletion.choices.first.message.role.name,
-        type: chatCompletion.choices.first.message.content!.first.type,
-        subject: isSubject ? subject : '',
-        text: isSubject ? contentText.extractTextAfterSubject() : contentText,
-      );
-
-      print(email.toString());
-      print(chatCompletion.choices.first.message);
-    }
+    ThemeData theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -82,15 +32,37 @@ class HomePage extends HookConsumerWidget {
               height: 150,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: Colors.red,
+                color: theme.colorScheme.primaryContainer,
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: SvgPicture.asset(
+                      'assets/robot.svg',
+                    ),
+                  ),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text('AI Email Writer', style: TextStyle(fontSize: 20),),
+                        ),
+                        AutoSizeText('Craft perfect emails in seconds with AI, edit and send professional messages!',style: TextStyle(fontSize: 14),)
+                      ],
+                    ),
+                  )
+                ],
               ),
             ),
             const SizedBox(
               height: 12,
             ),
-            Container(
+            SizedBox(
               width: double.infinity,
-              height: 150,
+              height: 120,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -98,10 +70,22 @@ class HomePage extends HookConsumerWidget {
                     child: InkWell(
                       onTap: () => context.push('/create'),
                       child: Container(
-                        height: 150,
+                        height: 120,
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          color: Colors.red,
+                          color: theme.colorScheme.primaryContainer,
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Icon(
+                              Icons.mail,
+                              size: 36,
+                            ),
+                            Text('Create email', style: TextStyle(fontSize: 22),)
+                          ],
                         ),
                       ),
                     ),
@@ -111,10 +95,22 @@ class HomePage extends HookConsumerWidget {
                   ),
                   Expanded(
                     child: Container(
-                      height: 150,
+                      height: 120,
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: Colors.red,
+                        color: theme.colorScheme.primaryContainer,
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            size: 36,
+                          ),
+                          Text('Favorite', style: TextStyle(fontSize: 22),)
+                        ],
                       ),
                     ),
                   ),
@@ -125,7 +121,6 @@ class HomePage extends HookConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(onPressed: onPressed),
     );
   }
 }
